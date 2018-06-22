@@ -57,7 +57,7 @@ public class IntegerType extends DataType<Integer> implements Streamer<Integer>,
     }
 
     @Override
-    public Integer value(Object value) {
+    public Integer value(Object value, boolean lossless) {
         if (value == null) {
             return null;
         }
@@ -75,10 +75,12 @@ public class IntegerType extends DataType<Integer> implements Streamer<Integer>,
             throw new IllegalArgumentException("integer value out of range: " + longVal);
         }
         Integer intValue = ((Number) value).intValue();
-        if (value instanceof Double && intValue.doubleValue() != (double) value) {
-            throw new IllegalArgumentException("Loss of precision for this double");
-        } else if (value instanceof Float && intValue.doubleValue() != (float) value) {
-            throw new IllegalArgumentException("Loss of precision for this float");
+        if (lossless) {
+            if (value instanceof Double && intValue.doubleValue() != (double) value) {
+                throw new IllegalArgumentException("Loss of precision for this double");
+            } else if (value instanceof Float && intValue.doubleValue() != (float) value) {
+                throw new IllegalArgumentException("Loss of precision for this float");
+            }
         }
         return intValue;
     }

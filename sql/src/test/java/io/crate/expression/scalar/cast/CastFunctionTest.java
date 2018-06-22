@@ -22,7 +22,6 @@
 
 package io.crate.expression.scalar.cast;
 
-import io.crate.exceptions.ConversionException;
 import io.crate.expression.scalar.AbstractScalarFunctionsTest;
 import io.crate.expression.symbol.Literal;
 import org.apache.lucene.util.BytesRef;
@@ -44,18 +43,15 @@ public class CastFunctionTest extends AbstractScalarFunctionsTest {
     }
 
     @Test
-    public void testInvalidCast() {
-        expectedException.expect(ConversionException.class);
-        expectedException.expectMessage("Cannot cast 10.4 to type long");
-        assertEvaluate("cast(10.4 as long)", 10L);
-    }
-
-    @Test
     public void testCasts() throws Exception {
         assertEvaluate("cast(10.4 as string)", new BytesRef("10.4"));
         assertEvaluate("cast(null as string)", null);
         assertEvaluate("cast(10.0 as long)", 10L);
-        assertEvaluate("to_long_array([10.0, 12.0])", new Long[] { 10L, 12L });
+        assertEvaluate("cast(10.4 as long)", 10L);
+        assertEvaluate("cast(10.4 as integer)", 10);
+        assertEvaluate("cast(10.4 as short)", (short) 10);
+        assertEvaluate("cast(10.4 as byte)", (byte) 10);
+        assertEvaluate("to_long_array([10.4, 12.3])", new Long[] { 10L, 12L });
         Map<String, Object> object = new HashMap<>();
         object.put("x", 10);
         assertEvaluate("'{\"x\": 10}'::object", object);
@@ -67,6 +63,10 @@ public class CastFunctionTest extends AbstractScalarFunctionsTest {
     @Test
     public void testDoubleColonOperatorCast() {
         assertEvaluate("10.4::string", new BytesRef("10.4"));
+        assertEvaluate("10.4::long", 10L);
+        assertEvaluate("10.4::integer", 10);
+        assertEvaluate("10.4::short", (short) 10);
+        assertEvaluate("10.4::byte", (byte) 10);
         assertEvaluate("[1, 2, 0]::array(boolean)", new Boolean[]{true, true, false});
         assertEvaluate("(1+3)/2::string", new BytesRef("2"));
         assertEvaluate("'10'::long + 5", 15L);

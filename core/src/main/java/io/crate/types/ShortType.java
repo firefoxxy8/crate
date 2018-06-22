@@ -57,7 +57,7 @@ public class ShortType extends DataType<Short> implements Streamer<Short>, Fixed
     }
 
     @Override
-    public Short value(Object value) {
+    public Short value(Object value, boolean lossless) {
         if (value == null) {
             return null;
         }
@@ -75,14 +75,16 @@ public class ShortType extends DataType<Short> implements Streamer<Short>, Fixed
             throw new IllegalArgumentException("short value out of range: " + intVal);
         }
         Short shortValue = ((Number) value).shortValue();
-        if (value instanceof Float && shortValue.doubleValue() != (float) value) {
-            throw new IllegalArgumentException("Loss of precision for this float");
-        } else if (value instanceof Double && shortValue.doubleValue() != (double) value) {
-            throw new IllegalArgumentException("Loss of precision for this double");
-        } else if (value instanceof Integer && shortValue.intValue() != (int) value) {
-            throw new IllegalArgumentException("Loss of precision for this int");
-        } else if (value instanceof Long && shortValue.longValue() != (long) value) {
-            throw new IllegalArgumentException("Loss of precision for this long");
+        if (lossless) {
+            if (value instanceof Float && shortValue.doubleValue() != (float) value) {
+                throw new IllegalArgumentException("Loss of precision for this float");
+            } else if (value instanceof Double && shortValue.doubleValue() != (double) value) {
+                throw new IllegalArgumentException("Loss of precision for this double");
+            } else if (value instanceof Integer && shortValue.intValue() != (int) value) {
+                throw new IllegalArgumentException("Loss of precision for this int");
+            } else if (value instanceof Long && shortValue.longValue() != (long) value) {
+                throw new IllegalArgumentException("Loss of precision for this long");
+            }
         }
         return shortValue;
     }
