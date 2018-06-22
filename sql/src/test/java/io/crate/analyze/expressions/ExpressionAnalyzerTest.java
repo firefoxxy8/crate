@@ -321,11 +321,11 @@ public class ExpressionAnalyzerTest extends CrateDummyClusterServiceUnitTest {
     @Test
     public void testFunctionsCanBeCasted() {
         SqlExpressions expressions = new SqlExpressions(T3.SOURCES);
-        Function symbol2 = (Function) expressions.asSymbol("doc.t2.i + 1 = 1");
+        Function symbol2 = (Function) expressions.asSymbol("doc.t2.i + 1 = 1.4");
         assertThat(symbol2, isFunction(EqOperator.NAME));
-        assertThat(symbol2.arguments().get(0), isFunction("to_long"));
-        assertThat(symbol2.arguments().get(0).valueType(), is(DataTypes.LONG));
-        assertThat(symbol2.arguments().get(1), isLiteral(1L));
+        assertThat(symbol2.arguments().get(0), isFunction("to_double"));
+        assertThat(symbol2.arguments().get(0).valueType(), is(DataTypes.DOUBLE));
+        assertThat(symbol2.arguments().get(1), isLiteral(1.4));
     }
 
     @Test
@@ -375,7 +375,7 @@ public class ExpressionAnalyzerTest extends CrateDummyClusterServiceUnitTest {
 
     @Test
     public void testAnyWithArrayOnBothSidesResultsInNiceErrorMessage() {
-        expectedException.expectMessage("Cannot cast long to type integer_array");
+        expectedException.expectMessage("Cannot cast [10, 20] to type integer_array_array");
         executor.analyze("select * from tarr where xs = ANY([10, 20])");
     }
 }

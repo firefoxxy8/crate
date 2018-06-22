@@ -74,7 +74,17 @@ public class ShortType extends DataType<Short> implements Streamer<Short>, Fixed
         if (intVal < Short.MIN_VALUE || Short.MAX_VALUE < intVal) {
             throw new IllegalArgumentException("short value out of range: " + intVal);
         }
-        return ((Number) value).shortValue();
+        Short shortValue = ((Number) value).shortValue();
+        if (value instanceof Float && shortValue.doubleValue() != (float) value) {
+            throw new IllegalArgumentException("Loss of precision for this float");
+        } else if (value instanceof Double && shortValue.doubleValue() != (double) value) {
+            throw new IllegalArgumentException("Loss of precision for this double");
+        } else if (value instanceof Integer && shortValue.intValue() != (int) value) {
+            throw new IllegalArgumentException("Loss of precision for this int");
+        } else if (value instanceof Long && shortValue.longValue() != (long) value) {
+            throw new IllegalArgumentException("Loss of precision for this long");
+        }
+        return shortValue;
     }
 
     @Override
