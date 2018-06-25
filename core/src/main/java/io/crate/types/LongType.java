@@ -54,7 +54,7 @@ public class LongType extends DataType<Long> implements FixedWidthType, Streamer
     }
 
     @Override
-    public Long value(Object value, boolean lossless) {
+    public Long value(Object value) {
         if (value == null) {
             return null;
         }
@@ -68,12 +68,10 @@ public class LongType extends DataType<Long> implements FixedWidthType, Streamer
             return parseLong((BytesRef) value);
         }
         Long longValue = ((Number) value).longValue();
-        if (lossless) {
-            if (value instanceof Double && longValue.doubleValue() != (double) value) {
-                throw new IllegalArgumentException("Loss of precision for this double");
-            } else if (value instanceof Float && longValue.doubleValue() != (float) value) {
-                throw new IllegalArgumentException("Loss of precision for this float");
-            }
+        if (value instanceof Double && longValue.doubleValue() != (double) value) {
+            throw new IllegalArgumentException("Loss of precision for this double");
+        } else if (value instanceof Float && longValue.doubleValue() != (float) value) {
+            throw new IllegalArgumentException("Loss of precision for this float");
         }
         return longValue;
     }

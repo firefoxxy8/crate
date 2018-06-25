@@ -57,7 +57,7 @@ public class FloatType extends DataType<Float> implements Streamer<Float>, Fixed
     }
 
     @Override
-    public Float value(Object value, boolean lossless) {
+    public Float value(Object value) {
         if (value == null) {
             return null;
         }

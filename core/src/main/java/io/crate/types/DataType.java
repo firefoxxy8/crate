@@ -78,19 +78,7 @@ public abstract class DataType<T> implements Comparable, Streamable {
 
     public abstract Streamer<T> streamer();
 
-    /**
-     * Converts/Casts the given object into an object matching this DataType.
-     * @param value The input value to convert
-     * @param lossless Whether the conversion should throw an exception if loss of precision occurred.
-     * @return The converted Object
-     * @throws IllegalArgumentException if the value can't be converted.
-     * @throws ClassCastException if an unexpected value was provided.
-     */
-    public abstract T value(Object value, boolean lossless) throws IllegalArgumentException, ClassCastException;
-
-    public final T value(Object value) throws IllegalArgumentException, ClassCastException {
-        return value(value, true);
-    }
+    public abstract T value(Object value) throws IllegalArgumentException, ClassCastException;
 
     public abstract int compareValueTo(T val1, T val2);
 

@@ -68,7 +68,7 @@ public class GeoPointType extends DataType<Double[]> implements Streamer<Double[
     }
 
     @Override
-    public Double[] value(Object value, boolean lossless) {
+    public Double[] value(Object value) {
         if (value == null) {
             return null;
         }

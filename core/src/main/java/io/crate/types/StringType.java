@@ -64,7 +64,7 @@ public class StringType extends DataType<BytesRef> implements Streamer<BytesRef>
     }
 
     @Override
-    public BytesRef value(Object value, boolean lossless) {
+    public BytesRef value(Object value) {
         if (value == null) {
             return null;
         }

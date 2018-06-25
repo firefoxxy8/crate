@@ -68,7 +68,7 @@ public class BooleanType extends DataType<Boolean> implements Streamer<Boolean>,
     }
 
     @Override
-    public Boolean value(Object value, boolean lossless) {
+    public Boolean value(Object value) {
         if (value == null) {
             return null;
         }

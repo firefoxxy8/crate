@@ -57,7 +57,7 @@ public class DoubleType extends DataType<Double> implements FixedWidthType, Stre
     }
 
     @Override
-    public Double value(Object value, boolean lossless) {
+    public Double value(Object value) {
         if (value == null) {
             return null;
         }

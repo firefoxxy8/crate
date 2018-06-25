@@ -57,7 +57,7 @@ public class UndefinedType extends DataType<Object> implements Streamer<Object> 
     }
 
     @Override
-    public Object value(Object value, boolean lossless) {
+    public Object value(Object value) {
         return value;
     }
 

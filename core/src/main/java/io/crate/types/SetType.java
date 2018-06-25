@@ -60,7 +60,7 @@ public class SetType extends CollectionType {
     }
 
     @Override
-    public Set<?> value(Object value, boolean lossless) {
+    public Set<?> value(Object value) {
         if (value instanceof Set) {
             return (Set) value;
         }
