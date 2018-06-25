@@ -448,9 +448,9 @@ public class SelectPlannerTest extends CrateDummyClusterServiceUnitTest {
     }
 
     @Test
-    public void testGlobalAggregateWithWhereOnPartitionColumn() throws Exception {
-        Collect globalAggregate = e.plan(
-            "select min(name) from parted where date >= 1395961100000");
+    public void testGlobalAggregateWithWhereOnPartitionColumn() {
+        Collect globalAggregate = (Collect) ((Merge) e.plan(
+            "select min(name) from parted where date >= 1395961100000")).subPlan();
         Routing routing = ((RoutedCollectPhase) globalAggregate.collectPhase()).routing();
 
         assertThat(
@@ -530,15 +530,19 @@ public class SelectPlannerTest extends CrateDummyClusterServiceUnitTest {
     }
 
     @Test
-    public void testReferenceToNestedAggregatedField() throws Exception {
-        Collect collect = e.plan("select ii, xx from ( " +
+    public void testReferenceToNestedAggregatedField() {
+        Merge merge = e.plan("select ii, xx from ( " +
                                  "  select i + i as ii, xx from (" +
                                  "    select i, sum(x) as xx from t1 group by i) as t) as tt " +
                                  "where (ii * 2) > 4 and (xx * 2) > 120");
+        Collect collect = (Collect) merge.subPlan();
         assertThat("would require merge with more than 1 nodeIds", collect.nodeIds().size(), is(1));
-        List<Projection> projections = collect.collectPhase().projections();
-        assertThat(projections, contains(
-            instanceOf(GroupProjection.class), // parallel on shard-level
+        List<Projection> collectProjections = collect.collectPhase().projections();
+        assertThat(collectProjections, contains(
+            instanceOf(GroupProjection.class)  // parallel on shard-level
+        ));
+
+        assertThat(merge.mergePhase().projections(), contains(
             instanceOf(GroupProjection.class), // node-level
             instanceOf(EvalProjection.class),
             instanceOf(FilterProjection.class)
@@ -630,15 +634,23 @@ public class SelectPlannerTest extends CrateDummyClusterServiceUnitTest {
     }
 
     @Test
-    public void testAggregationOnGeneratedColumns() throws Exception {
-        Collect plan = e.plan("select sum(profit) from gc_table");
-        List<Projection> projections = plan.collectPhase().projections();
-        assertThat(projections, contains(
-            instanceOf(AggregationProjection.class), // iter-partial on shard level
-            instanceOf(AggregationProjection.class)  // partial-final on node level
+    public void testAggregationOnGeneratedColumns() {
+        Merge merge = e.plan("select sum(profit) from gc_table");
+        Collect collect = (Collect) merge.subPlan();
+        List<Projection> collectProjections = collect.collectPhase().projections();
+        assertThat(collectProjections, contains(
+            instanceOf(AggregationProjection.class) // iter-partial on shard level
         ));
         assertThat(
-            ((AggregationProjection)projections.get(0)).aggregations().get(0).inputs().get(0),
+            ((AggregationProjection)collectProjections.get(0)).aggregations().get(0).inputs().get(0),
+            isSQL("INPUT(0)"));
+
+        List<Projection> mergeProjections = collect.collectPhase().projections();
+        assertThat(mergeProjections, contains(
+            instanceOf(AggregationProjection.class) // partial-final on node level
+        ));
+        assertThat(
+            ((AggregationProjection)mergeProjections.get(0)).aggregations().get(0).inputs().get(0),
             isSQL("INPUT(0)"));
     }
 
@@ -703,8 +715,8 @@ public class SelectPlannerTest extends CrateDummyClusterServiceUnitTest {
     }
 
     @Test
-    public void testGlobalAggregateOn2TableJoinWithNoMatch() throws Exception {
-        Join nl = e.plan("select count(*) from users t1, users t2 WHERE 1=2");
+    public void testGlobalAggregateOn2TableJoinWithNoMatch() {
+        Join nl = (Join) ((Merge) e.plan("select count(*) from users t1, users t2 WHERE 1=2")).subPlan();
         assertThat(nl.left(), instanceOf(Collect.class));
         assertThat(nl.right(), instanceOf(Collect.class));
         assertThat(((RoutedCollectPhase)((Collect)nl.left()).collectPhase()).where(), isLiteral(false));
@@ -712,8 +724,8 @@ public class SelectPlannerTest extends CrateDummyClusterServiceUnitTest {
     }
 
     @Test
-    public void testGlobalAggregateOn3TableJoinWithNoMatch() throws Exception {
-        Join outer = e.plan("select count(*) from users t1, users t2, users t3 WHERE 1=2");
+    public void testGlobalAggregateOn3TableJoinWithNoMatch() {
+        Join outer = (Join) ((Merge) e.plan("select count(*) from users t1, users t2, users t3 WHERE 1=2")).subPlan();
         Join inner = (Join) outer.left();
         assertThat(((RoutedCollectPhase)((Collect)outer.right()).collectPhase()).where(), isLiteral(false));
         assertThat(((RoutedCollectPhase)((Collect)inner.left()).collectPhase()).where(), isLiteral(false));

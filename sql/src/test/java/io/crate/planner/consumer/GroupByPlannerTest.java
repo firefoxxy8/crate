@@ -183,45 +183,53 @@ public class GroupByPlannerTest extends CrateDummyClusterServiceUnitTest {
     }
 
     @Test
-    public void testGroupByOnNodeLevel() throws Exception {
-        Collect collect = e.plan(
+    public void testGroupByOnNodeLevel() {
+        Merge merge = e.plan(
             "select count(*), name from sys.nodes group by name");
 
+        Collect collect = (Collect) merge.subPlan();
         assertThat("number of nodeIds must be 1, otherwise there must be a merge",
             collect.resultDescription().nodeIds().size(), is(1));
 
         RoutedCollectPhase collectPhase = ((RoutedCollectPhase) collect.collectPhase());
-        assertThat(collectPhase.projections(), contains(
+        assertThat(collectPhase.projections().size(), is(0));
+
+        List<Projection> mergeProjections = merge.mergePhase().projections();
+        assertThat(mergeProjections, contains(
             instanceOf(GroupProjection.class),
             instanceOf(EvalProjection.class)));
 
-        GroupProjection groupProjection = (GroupProjection) collectPhase.projections().get(0);
+        GroupProjection groupProjection = (GroupProjection) mergeProjections.get(0);
 
         assertThat(Symbols.typeView(groupProjection.outputs()), contains(
             is(DataTypes.STRING),
             is(DataTypes.LONG)));
 
-        assertThat(Symbols.typeView(collectPhase.projections().get(1).outputs()), contains(
+        assertThat(Symbols.typeView(mergeProjections.get(1).outputs()), contains(
             is(DataTypes.LONG),
             is(DataTypes.STRING)));
     }
 
     @Test
-    public void testNonDistributedGroupByOnClusteredColumn() throws Exception {
+    public void testNonDistributedGroupByOnClusteredColumn() {
         Merge merge = e.plan(
             "select count(*), id from users group by id limit 20");
-        Collect collect = ((Collect) merge.subPlan());
-        RoutedCollectPhase collectPhase = ((RoutedCollectPhase) collect.collectPhase());
-        assertThat(collectPhase.projections(), contains(
+        Merge innerMerge = (Merge) merge.subPlan();
+        Collect collect = ((Collect) innerMerge.subPlan());
+        List<Projection> collectProjections = collect.collectPhase().projections();
+        assertThat(collectProjections, contains(instanceOf(GroupProjection.class)));
+        assertThat(collectProjections.get(0).requiredGranularity(), is(RowGranularity.SHARD));
+
+        List<Projection> innerMergeProjections = innerMerge.mergePhase().projections();
+        assertThat(innerMergeProjections, contains(
             instanceOf(GroupProjection.class),
             instanceOf(TopNProjection.class),
             instanceOf(EvalProjection.class) // swaps id, count(*) output from group by to count(*), id
         ));
-        assertThat(collectPhase.projections().get(0).requiredGranularity(), is(RowGranularity.SHARD));
+        assertThat(innerMergeProjections.get(0).requiredGranularity(), is(RowGranularity.CLUSTER));
+
         MergePhase mergePhase = merge.mergePhase();
-        assertThat(mergePhase.projections(), contains(
-            instanceOf(TopNProjection.class))
-        );
+        assertThat(mergePhase.projections(), contains(instanceOf(TopNProjection.class)));
     }
 
     @Test

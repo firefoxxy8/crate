@@ -76,33 +76,36 @@ public class HashAggregate extends OneInputPlan {
         if (executionPlan.resultDescription().hasRemainingLimitOrOffset()) {
             executionPlan = Merge.ensureOnHandler(executionPlan, plannerContext);
         }
+
+        AggregationProjection finalProjection;
+
         if (ExecutionPhases.executesOnHandler(plannerContext.handlerNode(), executionPlan.resultDescription().nodeIds())) {
             if (source.preferShardProjections()) {
                 executionPlan.addProjection(projectionBuilder.aggregationProjection(
                     sourceOutputs, aggregates, AggregateMode.ITER_PARTIAL, RowGranularity.SHARD));
-                executionPlan.addProjection(projectionBuilder.aggregationProjection(
-                    aggregates, aggregates, AggregateMode.PARTIAL_FINAL, RowGranularity.CLUSTER));
-                return executionPlan;
-            }
-            AggregationProjection fullAggregation = projectionBuilder.aggregationProjection(
-                sourceOutputs, aggregates, AggregateMode.ITER_FINAL, RowGranularity.CLUSTER);
-            executionPlan.addProjection(fullAggregation);
-            return executionPlan;
-        }
-        AggregationProjection toPartial = projectionBuilder.aggregationProjection(
-            sourceOutputs,
-            aggregates,
-            AggregateMode.ITER_PARTIAL,
-            source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
-        );
-        executionPlan.addProjection(toPartial);
+                finalProjection = projectionBuilder.aggregationProjection(
+                    aggregates, aggregates, AggregateMode.PARTIAL_FINAL, RowGranularity.CLUSTER);
 
-        AggregationProjection toFinal = projectionBuilder.aggregationProjection(
-            aggregates,
-            aggregates,
-            AggregateMode.PARTIAL_FINAL,
-            RowGranularity.CLUSTER
-        );
+            } else {
+                finalProjection = projectionBuilder.aggregationProjection(
+                    sourceOutputs, aggregates, AggregateMode.ITER_FINAL, RowGranularity.CLUSTER);
+            }
+        } else {
+            AggregationProjection toPartial = projectionBuilder.aggregationProjection(
+                sourceOutputs,
+                aggregates,
+                AggregateMode.ITER_PARTIAL,
+                source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
+            );
+            executionPlan.addProjection(toPartial);
+
+            finalProjection = projectionBuilder.aggregationProjection(
+                aggregates,
+                aggregates,
+                AggregateMode.PARTIAL_FINAL,
+                RowGranularity.CLUSTER
+            );
+        }
         return new Merge(
             executionPlan,
             new MergePhase(
@@ -113,7 +116,7 @@ public class HashAggregate extends OneInputPlan {
                 1,
                 Collections.singletonList(plannerContext.handlerNode()),
                 executionPlan.resultDescription().streamOutputs(),
-                Collections.singletonList(toFinal),
+                Collections.singletonList(finalProjection),
                 DistributionInfo.DEFAULT_BROADCAST,
                 null
             ),

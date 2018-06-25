@@ -23,10 +23,21 @@
 package io.crate.execution.engine.collect.sources;
 
 import com.google.common.collect.Iterables;
-import io.crate.execution.engine.collect.CollectTask;
-import io.crate.expression.eval.EvaluatingNormalizer;
 import io.crate.data.RowConsumer;
 import io.crate.execution.TransportActionProvider;
+import io.crate.execution.dsl.phases.CollectPhase;
+import io.crate.execution.dsl.phases.ExecutionPhaseVisitor;
+import io.crate.execution.dsl.phases.FileUriCollectPhase;
+import io.crate.execution.dsl.phases.RoutedCollectPhase;
+import io.crate.execution.dsl.phases.TableFunctionCollectPhase;
+import io.crate.execution.engine.collect.CollectTask;
+import io.crate.execution.engine.collect.CrateCollector;
+import io.crate.execution.engine.collect.RowsCollector;
+import io.crate.execution.engine.pipeline.ProjectionToProjectorVisitor;
+import io.crate.execution.engine.pipeline.ProjectorFactory;
+import io.crate.execution.jobs.NodeJobsCounter;
+import io.crate.expression.InputFactory;
+import io.crate.expression.eval.EvaluatingNormalizer;
 import io.crate.metadata.Functions;
 import io.crate.metadata.IndexParts;
 import io.crate.metadata.RowGranularity;
@@ -36,17 +47,6 @@ import io.crate.metadata.sys.SysClusterTableInfo;
 import io.crate.metadata.sys.SysNodesTableInfo;
 import io.crate.metadata.sys.SysSchemaInfo;
 import io.crate.metadata.table.TableInfo;
-import io.crate.expression.InputFactory;
-import io.crate.execution.jobs.NodeJobsCounter;
-import io.crate.execution.engine.collect.CrateCollector;
-import io.crate.execution.engine.collect.RowsCollector;
-import io.crate.execution.engine.pipeline.ProjectionToProjectorVisitor;
-import io.crate.execution.engine.pipeline.ProjectorFactory;
-import io.crate.execution.dsl.phases.ExecutionPhaseVisitor;
-import io.crate.execution.dsl.phases.CollectPhase;
-import io.crate.execution.dsl.phases.FileUriCollectPhase;
-import io.crate.execution.dsl.phases.RoutedCollectPhase;
-import io.crate.execution.dsl.phases.TableFunctionCollectPhase;
 import org.elasticsearch.cluster.service.ClusterService;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.Singleton;
@@ -106,7 +106,7 @@ public class CollectSourceResolver {
         this.shardCollectSource = shardCollectSource;
         this.fileCollectSource = new ProjectorSetupCollectSource(fileCollectSource, projectorFactory);
         this.tableFunctionSource = new ProjectorSetupCollectSource(tableFunctionCollectSource, projectorFactory);
-        this.emptyCollectSource = new ProjectorSetupCollectSource(new VoidCollectSource(), projectorFactory);
+        this.emptyCollectSource = new EmptyCollectSource(new VoidCollectSource());
 
         nodeDocCollectSources.put(SysClusterTableInfo.IDENT.fqn(), new ProjectorSetupCollectSource(singleRowSource, projectorFactory));
 

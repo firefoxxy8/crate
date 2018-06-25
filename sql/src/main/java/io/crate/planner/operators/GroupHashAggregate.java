@@ -88,54 +88,52 @@ public class GroupHashAggregate extends OneInputPlan {
         if (executionPlan.resultDescription().hasRemainingLimitOrOffset()) {
             executionPlan = Merge.ensureOnHandler(executionPlan, plannerContext);
         }
+        Projection finalProjection;
         List<Symbol> sourceOutputs = source.outputs();
         if (shardsContainAllGroupKeyValues()) {
-            GroupProjection groupProjection = projectionBuilder.groupProjection(
+            finalProjection = projectionBuilder.groupProjection(
                 sourceOutputs,
                 groupKeys,
                 aggregates,
                 AggregateMode.ITER_FINAL,
                 source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.CLUSTER
             );
-            executionPlan.addProjection(groupProjection);
-            return executionPlan;
         }
 
         if (ExecutionPhases.executesOnHandler(plannerContext.handlerNode(), executionPlan.resultDescription().nodeIds())) {
             if (source.preferShardProjections()) {
                 executionPlan.addProjection(projectionBuilder.groupProjection(
                     sourceOutputs, groupKeys, aggregates, AggregateMode.ITER_PARTIAL, RowGranularity.SHARD));
-                executionPlan.addProjection(projectionBuilder.groupProjection(
-                    outputs, groupKeys, aggregates, AggregateMode.PARTIAL_FINAL, RowGranularity.NODE));
-                return executionPlan;
+                finalProjection = projectionBuilder.groupProjection(
+                    outputs, groupKeys, aggregates, AggregateMode.PARTIAL_FINAL, RowGranularity.NODE);
             } else {
-                executionPlan.addProjection(projectionBuilder.groupProjection(
-                    sourceOutputs, groupKeys, aggregates, AggregateMode.ITER_FINAL, RowGranularity.NODE));
-                return executionPlan;
+                finalProjection = projectionBuilder.groupProjection(
+                    sourceOutputs, groupKeys, aggregates, AggregateMode.ITER_FINAL, RowGranularity.NODE);
             }
+        } else {
+            GroupProjection toPartial = projectionBuilder.groupProjection(
+                sourceOutputs,
+                groupKeys,
+                aggregates,
+                AggregateMode.ITER_PARTIAL,
+                source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
+            );
+            executionPlan.addProjection(toPartial);
+            executionPlan.setDistributionInfo(DistributionInfo.DEFAULT_MODULO);
+
+            finalProjection = projectionBuilder.groupProjection(
+                this.outputs,
+                groupKeys,
+                aggregates,
+                AggregateMode.PARTIAL_FINAL,
+                RowGranularity.CLUSTER
+            );
         }
 
-        GroupProjection toPartial = projectionBuilder.groupProjection(
-            sourceOutputs,
-            groupKeys,
-            aggregates,
-            AggregateMode.ITER_PARTIAL,
-            source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
-        );
-        executionPlan.addProjection(toPartial);
-        executionPlan.setDistributionInfo(DistributionInfo.DEFAULT_MODULO);
-
-        GroupProjection toFinal = projectionBuilder.groupProjection(
-            this.outputs,
-            groupKeys,
-            aggregates,
-            AggregateMode.PARTIAL_FINAL,
-            RowGranularity.CLUSTER
-        );
         return createMerge(
             plannerContext,
             executionPlan,
-            Collections.singletonList(toFinal),
+            Collections.singletonList(finalProjection),
             executionPlan.resultDescription().nodeIds()
         );
     }
