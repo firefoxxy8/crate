@@ -106,7 +106,11 @@ public class CollectSourceResolver {
         this.shardCollectSource = shardCollectSource;
         this.fileCollectSource = new ProjectorSetupCollectSource(fileCollectSource, projectorFactory);
         this.tableFunctionSource = new ProjectorSetupCollectSource(tableFunctionCollectSource, projectorFactory);
-        this.emptyCollectSource = new ProjectorSetupCollectSource(new VoidCollectSource(), projectorFactory);
+        //this.emptyCollectSource = new ProjectorSetupCollectSource(new VoidCollectSource(), projectorFactory);
+        this.emptyCollectSource = (CollectPhase collectPhase, RowConsumer consumer, CollectTask collectTask) -> {
+            CollectSource source = new VoidCollectSource();
+            return source.getCollector(collectPhase, consumer, collectTask);
+        };
 
         nodeDocCollectSources.put(SysClusterTableInfo.IDENT.fqn(), new ProjectorSetupCollectSource(singleRowSource, projectorFactory));
 

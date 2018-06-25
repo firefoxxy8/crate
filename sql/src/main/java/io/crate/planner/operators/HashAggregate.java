@@ -77,6 +77,7 @@ public class HashAggregate extends OneInputPlan {
             executionPlan = Merge.ensureOnHandler(executionPlan, plannerContext);
         }
         if (ExecutionPhases.executesOnHandler(plannerContext.handlerNode(), executionPlan.resultDescription().nodeIds())) {
+            /*
             if (source.preferShardProjections()) {
                 executionPlan.addProjection(projectionBuilder.aggregationProjection(
                     sourceOutputs, aggregates, AggregateMode.ITER_PARTIAL, RowGranularity.SHARD));
@@ -88,14 +89,25 @@ public class HashAggregate extends OneInputPlan {
                 sourceOutputs, aggregates, AggregateMode.ITER_FINAL, RowGranularity.CLUSTER);
             executionPlan.addProjection(fullAggregation);
             return executionPlan;
+            */
+
+            AggregationProjection toPartial = projectionBuilder.aggregationProjection(
+                sourceOutputs,
+                aggregates,
+                AggregateMode.ITER_PARTIAL,
+                source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
+            );
+            executionPlan.addProjection(toPartial);
+
+        } else {
+            AggregationProjection toPartial = projectionBuilder.aggregationProjection(
+                sourceOutputs,
+                aggregates,
+                AggregateMode.ITER_PARTIAL,
+                source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
+            );
+            executionPlan.addProjection(toPartial);
         }
-        AggregationProjection toPartial = projectionBuilder.aggregationProjection(
-            sourceOutputs,
-            aggregates,
-            AggregateMode.ITER_PARTIAL,
-            source.preferShardProjections() ? RowGranularity.SHARD : RowGranularity.NODE
-        );
-        executionPlan.addProjection(toPartial);
 
         AggregationProjection toFinal = projectionBuilder.aggregationProjection(
             aggregates,
