@@ -249,6 +249,11 @@ public class HyperLogLogDistinctAggregation extends AggregationFunction<HyperLog
         }
 
         @Override
+        public boolean isConvertibleWithoutLoss(Object value) {
+            return false;
+        }
+
+        @Override
         public int compareValueTo(HyperLogLogDistinctAggregation.HllState val1, HyperLogLogDistinctAggregation.HllState val2) {
             if (val1 == null) {
                 return -1;

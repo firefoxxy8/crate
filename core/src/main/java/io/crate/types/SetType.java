@@ -79,6 +79,11 @@ public class SetType extends CollectionType {
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
+    @Override
     public int compareValueTo(Object val1, Object val2) {
         if (val2 == null) {
             return 1;

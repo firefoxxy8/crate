@@ -116,6 +116,11 @@ public class VarianceAggregation extends AggregationFunction<VarianceAggregation
         }
 
         @Override
+        public boolean isConvertibleWithoutLoss(Object value) {
+            return false;
+        }
+
+        @Override
         public int compareValueTo(VarianceState val1, VarianceState val2) {
             return val1.compareTo(val2);
         }

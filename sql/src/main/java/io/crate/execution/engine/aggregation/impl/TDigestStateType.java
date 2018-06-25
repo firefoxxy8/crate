@@ -73,6 +73,11 @@ class TDigestStateType extends DataType<TDigestState> implements Streamer<TDiges
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
+    @Override
     public int compareValueTo(TDigestState val1, TDigestState val2) {
         return 0;
     }

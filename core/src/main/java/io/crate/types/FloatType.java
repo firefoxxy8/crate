@@ -78,6 +78,22 @@ public class FloatType extends DataType<Float> implements Streamer<Float>, Fixed
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        if (value instanceof Number) {
+            double doubleValue = ((Number) value).doubleValue();
+            return Float.MIN_VALUE <= doubleValue || doubleValue <= Float.MAX_VALUE;
+        } else if (value instanceof BytesRef) {
+            try {
+                Float.parseFloat(((BytesRef) value).utf8ToString());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public int compareValueTo(Float val1, Float val2) {
         return nullSafeCompareValueTo(val1, val2, Float::compare);
     }

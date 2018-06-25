@@ -74,6 +74,19 @@ public class DoubleType extends DataType<Double> implements FixedWidthType, Stre
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        if (value instanceof BytesRef) {
+            try {
+                Double.parseDouble(((BytesRef) value).utf8ToString());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            return true;
+        }
+        return value instanceof Number;
+    }
+
+    @Override
     public int compareValueTo(Double val1, Double val2) {
         return nullSafeCompareValueTo(val1, val2, Double::compare);
     }

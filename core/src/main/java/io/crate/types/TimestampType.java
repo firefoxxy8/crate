@@ -83,6 +83,11 @@ public class TimestampType extends DataType<Long> implements FixedWidthType, Str
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return value instanceof Number;
+    }
+
+    @Override
     public int compareValueTo(Long val1, Long val2) {
         return nullSafeCompareValueTo(val1, val2, Long::compare);
     }

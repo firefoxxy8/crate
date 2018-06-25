@@ -115,6 +115,11 @@ public class StandardDeviationAggregation extends AggregationFunction<StandardDe
         }
 
         @Override
+        public boolean isConvertibleWithoutLoss(Object value) {
+            return false;
+        }
+
+        @Override
         public int compareValueTo(StdDevState val1, StdDevState val2) {
             return val1.compareTo(val2);
         }

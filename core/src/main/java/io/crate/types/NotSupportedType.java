@@ -62,6 +62,11 @@ public class NotSupportedType extends DataType<Void> {
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
+    @Override
     public int compareValueTo(Void val1, Void val2) {
         return 0;
     }

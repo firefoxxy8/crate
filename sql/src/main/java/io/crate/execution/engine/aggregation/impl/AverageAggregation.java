@@ -129,6 +129,11 @@ public class AverageAggregation extends AggregationFunction<AverageAggregation.A
         }
 
         @Override
+        public boolean isConvertibleWithoutLoss(Object value) {
+            return false;
+        }
+
+        @Override
         public int compareValueTo(AverageState val1, AverageState val2) {
             if (val1 == null) return -1;
             return val1.compareTo(val2);

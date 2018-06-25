@@ -71,19 +71,34 @@ public class ByteType extends DataType<Byte> implements Streamer<Byte>, FixedWid
         if (val < Byte.MIN_VALUE || Byte.MAX_VALUE < val) {
             throw new IllegalArgumentException("byte value out of range: " + val);
         }
-        Byte byteValue = ((Number) value).byteValue();
-        if (value instanceof Float && byteValue.doubleValue() != (float) value) {
-            throw new IllegalArgumentException("Loss of precision for this float");
-        } else if (value instanceof Double && byteValue.doubleValue() != (double) value) {
-            throw new IllegalArgumentException("Loss of precision for this double");
-        } else if (value instanceof Short && byteValue.shortValue() != (short) value) {
-            throw new IllegalArgumentException("Loss of precision for this int");
-        } else if (value instanceof Integer && byteValue.intValue() != (int) value) {
-            throw new IllegalArgumentException("Loss of precision for this int");
-        } else if (value instanceof Long && byteValue.longValue() != (long) value) {
-            throw new IllegalArgumentException("Loss of precision for this long");
+        return ((Number) value).byteValue();
+    }
+
+    @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        if (value instanceof Number) {
+            Byte byteValue = ((Number) value).byteValue();
+            if (value instanceof Float && byteValue.doubleValue() != (float) value) {
+                return false;
+            } else if (value instanceof Double && byteValue.doubleValue() != (double) value) {
+                return false;
+            } else if (value instanceof Short && byteValue.shortValue() != (short) value) {
+                return false;
+            } else if (value instanceof Integer && byteValue.intValue() != (int) value) {
+                return false;
+            } else if (value instanceof Long && byteValue.longValue() != (long) value) {
+                return false;
+            }
+            return true;
+        } else if (value instanceof BytesRef) {
+            try {
+                Byte.parseByte(((BytesRef) value).utf8ToString());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            return true;
         }
-        return byteValue;
+        return false;
     }
 
     @Override

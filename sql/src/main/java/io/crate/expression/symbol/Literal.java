@@ -168,12 +168,7 @@ public class Literal<ReturnType> extends Symbol implements Input<ReturnType>, Co
         if (!type.isConvertableTo(dataType)) {
             return false;
         }
-        try {
-            dataType.value(this.value);
-        } catch (IllegalArgumentException | ClassCastException e) {
-            return false;
-        }
-        return true;
+        return dataType.isConvertibleWithoutLoss(this.value);
     }
 
     @Override

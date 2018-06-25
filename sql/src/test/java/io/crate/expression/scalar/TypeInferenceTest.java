@@ -49,7 +49,7 @@ public class TypeInferenceTest extends AbstractScalarFunctionsTest {
         assertEvaluate("coalesce(null, 1::integer, 2::long, 3.0::double, 2.5::float)", 1.0);
         assertEvaluate("coalesce(null, 1::integer, 2::long, 2.5::float)", 1.0f);
         assertEvaluate("coalesce(null, 1::integer, 2::long)", 1L);
-        assertEvaluate("coalesce(null, 1::integer, '1')", 1);
+        assertEvaluate("coalesce(null, 1::integer, '2')", 1);
         assertEvaluate("coalesce(null, 1::integer)", 1);
         assertEvaluate("coalesce(null)", null);
     }

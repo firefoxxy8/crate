@@ -80,6 +80,13 @@ public abstract class DataType<T> implements Comparable, Streamable {
 
     public abstract T value(Object value) throws IllegalArgumentException, ClassCastException;
 
+    /**
+     * Checks if the given value can be converted to this type without loss of precision.
+     * @param value The value to be checked for lossless conversion.
+     * @return True if lossless conversion is possible, false otherwise.
+     */
+    public abstract boolean isConvertibleWithoutLoss(Object value);
+
     public abstract int compareValueTo(T val1, T val2);
 
     /**

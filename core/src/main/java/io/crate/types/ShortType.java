@@ -74,17 +74,32 @@ public class ShortType extends DataType<Short> implements Streamer<Short>, Fixed
         if (intVal < Short.MIN_VALUE || Short.MAX_VALUE < intVal) {
             throw new IllegalArgumentException("short value out of range: " + intVal);
         }
-        Short shortValue = ((Number) value).shortValue();
-        if (value instanceof Float && shortValue.doubleValue() != (float) value) {
-            throw new IllegalArgumentException("Loss of precision for this float");
-        } else if (value instanceof Double && shortValue.doubleValue() != (double) value) {
-            throw new IllegalArgumentException("Loss of precision for this double");
-        } else if (value instanceof Integer && shortValue.intValue() != (int) value) {
-            throw new IllegalArgumentException("Loss of precision for this int");
-        } else if (value instanceof Long && shortValue.longValue() != (long) value) {
-            throw new IllegalArgumentException("Loss of precision for this long");
+        return ((Number) value).shortValue();
+    }
+
+    @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        if (value instanceof Number) {
+            Short shortValue = ((Number) value).shortValue();
+            if (value instanceof Float && shortValue.doubleValue() != (float) value) {
+                return false;
+            } else if (value instanceof Double && shortValue.doubleValue() != (double) value) {
+                return false;
+            } else if (value instanceof Integer && shortValue.intValue() != (int) value) {
+                return false;
+            } else if (value instanceof Long && shortValue.longValue() != (long) value) {
+                return false;
+            }
+            return true;
+        } else if (value instanceof BytesRef) {
+            try {
+                Short.parseShort(((BytesRef) value).utf8ToString());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            return true;
         }
-        return shortValue;
+        return false;
     }
 
     @Override

@@ -149,6 +149,11 @@ public class GeometricMeanAggregation extends AggregationFunction<GeometricMeanA
         }
 
         @Override
+        public boolean isConvertibleWithoutLoss(Object value) {
+            return false;
+        }
+
+        @Override
         public int compareValueTo(GeometricMeanState val1, GeometricMeanState val2) {
             return val1.compareTo(val2);
         }

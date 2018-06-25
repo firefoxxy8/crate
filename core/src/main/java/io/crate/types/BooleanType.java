@@ -84,6 +84,11 @@ public class BooleanType extends DataType<Boolean> implements Streamer<Boolean>,
         return (Boolean) value;
     }
 
+    @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return value instanceof Number;
+    }
+
     private Boolean booleanFromString(String value) {
         String lowerValue = value.toLowerCase(Locale.ENGLISH);
         Boolean boolValue = booleanMap.get(lowerValue);

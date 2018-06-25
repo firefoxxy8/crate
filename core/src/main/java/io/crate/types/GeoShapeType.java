@@ -84,6 +84,11 @@ public class GeoShapeType extends DataType<Map<String, Object>> implements Strea
         throw new IllegalArgumentException(invalidMsg(value));
     }
 
+    @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
     private String invalidMsg(Object value) {
         return String.format(Locale.ENGLISH, "Cannot convert \"%s\" to geo_shape", value);
     }

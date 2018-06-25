@@ -62,6 +62,11 @@ public class UndefinedType extends DataType<Object> implements Streamer<Object> 
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
+    @Override
     public boolean isConvertableTo(DataType other) {
         return true;
     }

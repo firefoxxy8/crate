@@ -96,6 +96,12 @@ public class StringType extends DataType<BytesRef> implements Streamer<BytesRef>
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        // Everything is convertible to String
+        return true;
+    }
+
+    @Override
     public int compareValueTo(BytesRef val1, BytesRef val2) {
         return Ordering.natural().nullsFirst().compare(val1, val2);
     }

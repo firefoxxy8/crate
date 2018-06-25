@@ -70,6 +70,11 @@ public class ObjectType extends DataType<Map<String, Object>> implements Streame
         return (Map<String, Object>) value;
     }
 
+    @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
     private static Map<String,Object> mapFromBytesRef(BytesRef value) {
         try {
             XContentParser parser = JsonXContent.jsonXContent.createParser(

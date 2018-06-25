@@ -100,6 +100,11 @@ public class GeoPointType extends DataType<Double[]> implements Streamer<Double[
         return geoPoint;
     }
 
+    @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        return false;
+    }
+
     private void validate(Double[] doubles) {
         if (!isValid(doubles)) {
             throw new IllegalArgumentException(String.format(Locale.ENGLISH,

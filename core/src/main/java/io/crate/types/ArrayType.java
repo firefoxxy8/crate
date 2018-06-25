@@ -80,6 +80,28 @@ public class ArrayType extends CollectionType {
     }
 
     @Override
+    public boolean isConvertibleWithoutLoss(Object value) {
+        if (value instanceof Collection) {
+            Collection values = (Collection) value;
+            for (Object o : values) {
+                if (!innerType.isConvertibleWithoutLoss(o)) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (value instanceof Object[]) {
+            Object[] values = (Object[]) value;
+            for (Object o : values) {
+                if (!innerType.isConvertibleWithoutLoss(o)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public CollectionType newInstance(DataType innerType) {
         return new ArrayType(innerType);
     }
