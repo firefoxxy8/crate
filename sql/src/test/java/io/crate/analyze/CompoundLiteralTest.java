@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.crate.testing.SymbolMatchers.isFunction;
+import static io.crate.testing.SymbolMatchers.isLiteral;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
@@ -136,9 +137,7 @@ public class CompoundLiteralTest extends CrateUnitTest {
 
     @Test
     public void testArrayDifferentTypes() throws Exception {
-        expectedException.expect(ConversionException.class);
-        expectedException.expectMessage("Cannot cast 1.1 to type string_array");
-        analyzeExpression("[1.1, ['string']]");
+        assertThat(analyzeExpression("[1.1, 'string']"), isLiteral(new Object[] {new BytesRef("1.1"), new BytesRef("string")}));
     }
 
     @Test

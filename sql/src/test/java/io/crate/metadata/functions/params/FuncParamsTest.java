@@ -216,7 +216,7 @@ public class FuncParamsTest extends CrateUnitTest {
         }
 
         @Override
-        public boolean canBeCasted() {
+        public boolean canBeCastTo(DataType targetType) {
             return castable;
         }
 

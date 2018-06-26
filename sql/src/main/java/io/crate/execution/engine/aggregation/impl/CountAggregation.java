@@ -231,7 +231,7 @@ public class CountAggregation extends AggregationFunction<CountAggregation.LongS
         }
 
         @Override
-        public boolean isConvertibleWithoutLoss(Object value) {
+        public boolean checkLosslessConversion(Object value) {
             return false;
         }
 

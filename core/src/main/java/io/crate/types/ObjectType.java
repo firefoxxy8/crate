@@ -71,7 +71,7 @@ public class ObjectType extends DataType<Map<String, Object>> implements Streame
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         return false;
     }
 

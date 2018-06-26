@@ -71,7 +71,7 @@ public class LongType extends DataType<Long> implements FixedWidthType, Streamer
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof Number) {
             Long longValue = ((Number) value).longValue();
             if (value instanceof Double && longValue.doubleValue() != (double) value) {

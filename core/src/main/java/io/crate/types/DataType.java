@@ -26,6 +26,7 @@ import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.io.stream.Streamable;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Objects;
@@ -47,7 +48,6 @@ public abstract class DataType<T> implements Comparable, Streamable {
     public enum Precedence {
         NotSupportedType,
         UndefinedType,
-        LiteralType,
         StringType,
         ByteType,
         BooleanType,
@@ -85,7 +85,7 @@ public abstract class DataType<T> implements Comparable, Streamable {
      * @param value The value to be checked for lossless conversion.
      * @return True if lossless conversion is possible, false otherwise.
      */
-    public abstract boolean isConvertibleWithoutLoss(Object value);
+    protected abstract boolean checkLosslessConversion(Object value);
 
     public abstract int compareValueTo(T val1, T val2);
 
@@ -98,6 +98,26 @@ public abstract class DataType<T> implements Comparable, Streamable {
         return this.precedence().ordinal() > other.precedence().ordinal();
     }
 
+    public boolean isLosslesslyConvertableTo(DataType dataType) {
+        return isLosslesslyConvertableTo(dataType, null);
+    }
+
+        /**
+         * Checks whether this Literal can be converted to the given DataType without loss of information.
+         * @param dataType The type to check for lossless conversion.
+         * @param value Optional value which might be convertible but the general DataType might not.
+         * @return True if lossless conversion is possible, false otherwise.
+         */
+    public boolean isLosslesslyConvertableTo(DataType dataType, @Nullable Object value) {
+        if (dataType.equals(this)) {
+            return true;
+        }
+        if (value != null) {
+            return dataType.checkLosslessConversion(value);
+        }
+        return isConvertableTo(dataType);
+    }
+
     /**
      * check whether a value of this type is convertible to <code>other</code>
      *
@@ -108,7 +128,7 @@ public abstract class DataType<T> implements Comparable, Streamable {
         if (this.equals(other)) {
             return true;
         }
-        Set<DataType> possibleConversions = DataTypes.ALLOWED_CONVERSIONS.get(id());
+        Set<DataType> possibleConversions = DataTypes.SAFE_CONVERSIONS.get(id());
         //noinspection SimplifiableIfStatement
         if (possibleConversions == null) {
             return false;

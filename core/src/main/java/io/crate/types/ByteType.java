@@ -75,7 +75,7 @@ public class ByteType extends DataType<Byte> implements Streamer<Byte>, FixedWid
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof Number) {
             Byte byteValue = ((Number) value).byteValue();
             if (value instanceof Float && byteValue.doubleValue() != (float) value) {

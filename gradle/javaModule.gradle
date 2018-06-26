@@ -18,7 +18,7 @@ compileJava {
     options.fork = true
     options.forkOptions.executable = 'javac'
 
-    finalizedBy checkstyleMain
+//    finalizedBy checkstyleMain
 }
 
 

@@ -85,7 +85,7 @@ public class GeoShapeType extends DataType<Map<String, Object>> implements Strea
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         return false;
     }
 

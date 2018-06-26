@@ -92,7 +92,7 @@ public class TypeConversionTest extends CrateUnitTest {
     public void numberConversionTest() throws Exception {
 
         for (Byte byteVal : bytes(10)) {
-            for (DataType t : DataTypes.ALLOWED_CONVERSIONS.get(DataTypes.BYTE.id())) {
+            for (DataType t : DataTypes.SAFE_CONVERSIONS.get(DataTypes.BYTE.id())) {
                 if (t.equals(DataTypes.IP)) {
                     byteVal = (byte) Math.abs(byteVal == Byte.MIN_VALUE ? byteVal >> 1 : byteVal);
                 }
@@ -101,35 +101,35 @@ public class TypeConversionTest extends CrateUnitTest {
         }
 
         for (Integer shortVal : integers((int) Byte.MIN_VALUE, (int) Byte.MAX_VALUE, 10)) {
-            for (DataType t : DataTypes.ALLOWED_CONVERSIONS.get(DataTypes.SHORT.id())) {
+            for (DataType t : DataTypes.SAFE_CONVERSIONS.get(DataTypes.SHORT.id())) {
                 shortVal = t.equals(DataTypes.IP) ? Math.abs(shortVal) : shortVal;
                 t.value(shortVal.shortValue());
             }
         }
 
         for (Integer intValue : integers((int) Byte.MIN_VALUE, (int) Byte.MAX_VALUE, 10)) {
-            for (DataType t : DataTypes.ALLOWED_CONVERSIONS.get(DataTypes.INTEGER.id())) {
+            for (DataType t : DataTypes.SAFE_CONVERSIONS.get(DataTypes.INTEGER.id())) {
                 intValue = t.equals(DataTypes.IP) ? Math.abs(intValue) : intValue;
                 t.value(intValue);
             }
         }
 
         for (Integer longValue : integers((int) Byte.MIN_VALUE, (int) Byte.MAX_VALUE, 10)) {
-            for (DataType t : DataTypes.ALLOWED_CONVERSIONS.get(DataTypes.LONG.id())) {
+            for (DataType t : DataTypes.SAFE_CONVERSIONS.get(DataTypes.LONG.id())) {
                 longValue = t.equals(DataTypes.IP) ? Math.abs(longValue) : longValue;
                 t.value(longValue.longValue());
             }
         }
 
         for (Integer floatValue : integers((int) Byte.MIN_VALUE, (int) Byte.MAX_VALUE, 10)) {
-            for (DataType t : DataTypes.ALLOWED_CONVERSIONS.get(DataTypes.FLOAT.id())) {
+            for (DataType t : DataTypes.SAFE_CONVERSIONS.get(DataTypes.FLOAT.id())) {
                 floatValue = t.equals(DataTypes.IP) ? Math.abs(floatValue) : floatValue;
                 t.value(floatValue.floatValue());
             }
         }
 
         for (Integer doubleValue : integers((int) Byte.MIN_VALUE, (int) Byte.MAX_VALUE, 10)) {
-            for (DataType t : DataTypes.ALLOWED_CONVERSIONS.get(DataTypes.DOUBLE.id())) {
+            for (DataType t : DataTypes.SAFE_CONVERSIONS.get(DataTypes.DOUBLE.id())) {
                 doubleValue = t.equals(DataTypes.IP) ? Math.abs(doubleValue) : doubleValue;
                 t.value(doubleValue.doubleValue());
             }
@@ -168,50 +168,50 @@ public class TypeConversionTest extends CrateUnitTest {
 
     @Test
     public void testDoubleToIntegerLossOfPrecision() {
-        assertThat(DataTypes.INTEGER.isConvertibleWithoutLoss(1.0), is(true));
-        assertThat(DataTypes.INTEGER.isConvertibleWithoutLoss(1.4), is(false));
+        assertThat(DataTypes.INTEGER.checkLosslessConversion(1.0), is(true));
+        assertThat(DataTypes.INTEGER.checkLosslessConversion(1.4), is(false));
     }
 
     @Test
     public void testDoubleToShortLossOfPrecision() {
-        assertThat(DataTypes.SHORT.isConvertibleWithoutLoss(1.0), is(true));
-        assertThat(DataTypes.SHORT.isConvertibleWithoutLoss(1.4), is(false));
+        assertThat(DataTypes.SHORT.checkLosslessConversion(1.0), is(true));
+        assertThat(DataTypes.SHORT.checkLosslessConversion(1.4), is(false));
     }
 
     @Test
     public void testDoubleToByteLossOfPrecision() {
-        assertThat(DataTypes.BYTE.isConvertibleWithoutLoss(1.0), is(true));
-        assertThat(DataTypes.BYTE.isConvertibleWithoutLoss(1.4), is(false));
+        assertThat(DataTypes.BYTE.checkLosslessConversion(1.0), is(true));
+        assertThat(DataTypes.BYTE.checkLosslessConversion(1.4), is(false));
     }
 
     @Test
     public void testFloatToIntegerLossOfPrecision() {
-        assertThat(DataTypes.INTEGER.isConvertibleWithoutLoss(1.0f), is(true));
-        assertThat(DataTypes.INTEGER.isConvertibleWithoutLoss(1.4f), is(false));
+        assertThat(DataTypes.INTEGER.checkLosslessConversion(1.0f), is(true));
+        assertThat(DataTypes.INTEGER.checkLosslessConversion(1.4f), is(false));
     }
 
     @Test
     public void testFloatToShortLossOfPrecision() {
-        assertThat(DataTypes.SHORT.isConvertibleWithoutLoss(1.0f), is(true));
-        assertThat(DataTypes.SHORT.isConvertibleWithoutLoss(1.4f), is(false));
+        assertThat(DataTypes.SHORT.checkLosslessConversion(1.0f), is(true));
+        assertThat(DataTypes.SHORT.checkLosslessConversion(1.4f), is(false));
     }
 
     @Test
     public void testFloatToByteLossOfPrecision() {
-        assertThat(DataTypes.BYTE.isConvertibleWithoutLoss(1.0f), is(true));
-        assertThat(DataTypes.BYTE.isConvertibleWithoutLoss(1.4f), is(false));
+        assertThat(DataTypes.BYTE.checkLosslessConversion(1.0f), is(true));
+        assertThat(DataTypes.BYTE.checkLosslessConversion(1.4f), is(false));
     }
 
     @Test
     public void testDoubleToLongLossOfPrecision() {
-        assertThat(DataTypes.LONG.isConvertibleWithoutLoss(1.0), is(true));
-        assertThat(DataTypes.LONG.isConvertibleWithoutLoss(1.4), is(false));
+        assertThat(DataTypes.LONG.checkLosslessConversion(1.0), is(true));
+        assertThat(DataTypes.LONG.checkLosslessConversion(1.4), is(false));
     }
 
     @Test
     public void testFloatToLongLossOfPrecision() {
-        assertThat(DataTypes.LONG.isConvertibleWithoutLoss(1.0f), is(true));
-        assertThat(DataTypes.LONG.isConvertibleWithoutLoss(1.4f), is(false));
+        assertThat(DataTypes.LONG.checkLosslessConversion(1.0f), is(true));
+        assertThat(DataTypes.LONG.checkLosslessConversion(1.4f), is(false));
     }
 
     @Test(expected = IllegalArgumentException.class)

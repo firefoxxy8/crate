@@ -225,11 +225,11 @@ class InsertFromSubQueryAnalyzer {
             Reference targetCol = targetColumns.get(i);
             Symbol source = sources.get(i);
             DataType targetType = targetCol.valueType();
-            if (targetType.id() == DataTypes.UNDEFINED.id() || source.valueType().isConvertableTo(targetType)) {
+            if (targetType.id() == DataTypes.UNDEFINED.id() || source.canBeCastTo(targetType)) {
                 continue;
             }
             throw new IllegalArgumentException(String.format(Locale.ENGLISH,
-                "Type of subquery column %s (%s) does not match is not convertable to the type of table column %s (%s)",
+                "Type of subquery column %s (%s) does not match is not convertible to the type of table column %s (%s)",
                 source,
                 source.valueType(),
                 targetCol.column().fqn(),

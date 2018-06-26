@@ -78,7 +78,7 @@ public class FloatType extends DataType<Float> implements Streamer<Float>, Fixed
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             return Float.MIN_VALUE <= doubleValue || doubleValue <= Float.MAX_VALUE;

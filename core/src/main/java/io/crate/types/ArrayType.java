@@ -52,9 +52,6 @@ public class ArrayType extends CollectionType {
 
     @Override
     public Object[] value(Object value) {
-        // We can pass in Collections and Arrays here but we always
-        // have to return arrays since a lot of code makes assumptions
-        // about this.
         if (value == null) {
             return null;
         }
@@ -80,11 +77,11 @@ public class ArrayType extends CollectionType {
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof Collection) {
             Collection values = (Collection) value;
             for (Object o : values) {
-                if (!innerType.isConvertibleWithoutLoss(o)) {
+                if (!innerType.checkLosslessConversion(o)) {
                     return false;
                 }
             }
@@ -92,7 +89,7 @@ public class ArrayType extends CollectionType {
         } else if (value instanceof Object[]) {
             Object[] values = (Object[]) value;
             for (Object o : values) {
-                if (!innerType.isConvertibleWithoutLoss(o)) {
+                if (!innerType.checkLosslessConversion(o)) {
                     return false;
                 }
             }

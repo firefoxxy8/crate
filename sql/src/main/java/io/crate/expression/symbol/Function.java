@@ -71,8 +71,9 @@ public class Function extends Symbol implements Cloneable {
     }
 
     @Override
-    public boolean canBeCasted() {
-        return info.type() == FunctionInfo.Type.SCALAR || info.type() == FunctionInfo.Type.AGGREGATE;
+    public boolean canBeCastTo(DataType targetType) {
+        return info.returnType().isLosslesslyConvertableTo(targetType) &&
+               (info.type() == FunctionInfo.Type.SCALAR || info.type() == FunctionInfo.Type.AGGREGATE);
     }
 
     @Override

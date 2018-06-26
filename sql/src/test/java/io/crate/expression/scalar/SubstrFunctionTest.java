@@ -89,7 +89,7 @@ public class SubstrFunctionTest extends AbstractScalarFunctionsTest {
     @Test
     public void testInvalidArgs() throws Exception {
         expectedException.expect(ConversionException.class);
-        expectedException.expectMessage("Cannot cast 'b' to type integer");
+        expectedException.expectMessage("Cannot cast 'b' to type [integer, short, byte]");
         assertNormalize("substr('foo', 'b')", null);
     }
 }

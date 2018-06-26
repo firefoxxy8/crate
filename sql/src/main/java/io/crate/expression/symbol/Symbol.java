@@ -76,9 +76,10 @@ public abstract class Symbol implements FuncArg, Writeable, ExplainLeaf {
      * The reasoning behind this is that we want to avoid
      * query Lucene performance to drop due to casts. This
      * is true for {@link Field}/{@link io.crate.metadata.Reference}.
+     * @param targetType
      */
     @Override
-    public boolean canBeCasted() {
-        return valueType().id() == UndefinedType.INSTANCE.id();
+    public boolean canBeCastTo(DataType targetType) {
+        return valueType().isLosslesslyConvertableTo(targetType);
     }
 }

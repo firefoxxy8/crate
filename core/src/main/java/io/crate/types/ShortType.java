@@ -78,7 +78,7 @@ public class ShortType extends DataType<Short> implements Streamer<Short>, Fixed
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof Number) {
             Short shortValue = ((Number) value).shortValue();
             if (value instanceof Float && shortValue.doubleValue() != (float) value) {

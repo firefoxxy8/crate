@@ -36,14 +36,16 @@ public interface FuncArg {
     DataType valueType();
 
     /**
-     * Indicates whether a Symbol can be casted or not.
-     * Typically, we only allow casting of Literals, but for example
-     * even if casting a column to the Literal type is not allowed,
-     * casting two columns when used on both sides of an operator or
-     * function is allowed.
+     * Indicates whether a Symbol can be cast or not. Literals should
+     * be converted before symbols to minimize the performance impact.
      * Note: Convertibility checks have to be performed nevertheless.
      *       This just indicates whether casting is allowed.
+     * @param targetType The new type of the symbol after conversion.
      * @return True is casting is possible, false otherwise.
      */
-    boolean canBeCasted();
+    boolean canBeCastTo(DataType targetType);
+
+    default boolean isLiteralSymbol() {
+        return false;
+    }
 }

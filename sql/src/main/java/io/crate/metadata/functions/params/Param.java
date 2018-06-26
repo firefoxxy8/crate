@@ -25,7 +25,6 @@ package io.crate.metadata.functions.params;
 import com.google.common.base.Preconditions;
 import io.crate.exceptions.ConversionException;
 import io.crate.expression.symbol.FuncArg;
-import io.crate.expression.symbol.Literal;
 import io.crate.types.ArrayType;
 import io.crate.types.BooleanType;
 import io.crate.types.CollectionType;
@@ -46,6 +45,7 @@ import java.util.Deque;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 /**
  * A single function parameter as part of a function parameter definition in {@link FuncParams}.
@@ -207,7 +207,12 @@ public final class Param {
             if (argDataType instanceof CollectionType) {
                 DataType innerType = Preconditions.checkNotNull(((CollectionType) argDataType).innerType(),
                     "Inner type expected but no inner type for argument: " + funcArg);
-                this.innerType.bind(new ConvertedArg(innerType, funcArg.canBeCasted()), multiBind);
+                this.innerType.bind(
+                    new ConvertedArg(
+                        innerType,
+                        targetType -> funcArg.canBeCastTo(((CollectionType) argDataType).newInstance(targetType)),
+                        funcArg.isLiteralSymbol()),
+                    multiBind);
             } else {
                 throw new IllegalArgumentException("DataType with an inner type expected but not provided.");
             }
@@ -230,7 +235,7 @@ public final class Param {
     }
 
     private static FuncArg convert(FuncArg source, DataType target) {
-        if (source.canBeCasted() && source.valueType().isConvertableTo(target)) {
+        if (source.canBeCastTo(target)) {
             return new ConvertedArg(source, target);
         }
         return null;
@@ -239,18 +244,21 @@ public final class Param {
     private static class ConvertedArg implements FuncArg {
 
         private final DataType dataType;
-        private final boolean canBeCasted;
+        private final Function<DataType, Boolean> canBeCast;
+        private final boolean higherPrecedenceSymbol;
 
         private ConvertedArg(FuncArg sourceArg, DataType targetDataType) {
-            Preconditions.checkArgument(sourceArg.canBeCasted(),
+            Preconditions.checkArgument(sourceArg.canBeCastTo(targetDataType),
                 "Converted argument must be castable.");
             this.dataType = targetDataType;
-            this.canBeCasted = true;
+            this.canBeCast = target -> dataType.isLosslesslyConvertableTo(targetDataType);
+            this.higherPrecedenceSymbol = sourceArg.isLiteralSymbol();
         }
 
-        private ConvertedArg(DataType argumentType, boolean canBeCasted) {
+        private ConvertedArg(DataType argumentType, Function<DataType, Boolean> canBeCast, boolean higherPrecedenceSymbol) {
             this.dataType = argumentType;
-            this.canBeCasted = canBeCasted;
+            this.canBeCast = canBeCast;
+            this.higherPrecedenceSymbol = higherPrecedenceSymbol;
         }
 
         @Override
@@ -259,8 +267,13 @@ public final class Param {
         }
 
         @Override
-        public boolean canBeCasted() {
-            return canBeCasted;
+        public boolean canBeCastTo(DataType targetType) {
+            return canBeCast.apply(targetType);
+        }
+
+        @Override
+        public boolean isLiteralSymbol() {
+            return higherPrecedenceSymbol;
         }
 
         @Override
@@ -279,43 +292,43 @@ public final class Param {
      */
     @Nullable
     private FuncArg convertTypes(FuncArg arg1, FuncArg arg2) {
-        final FuncArg target;
-        final FuncArg source;
+        final FuncArg higherPrecedence;
+        final FuncArg lowerPrecedence;
         if (arg1.valueType().precedes(arg2.valueType())) {
-            target = arg1;
-            source = arg2;
+            higherPrecedence = arg1;
+            lowerPrecedence = arg2;
         } else {
-            target = arg2;
-            source = arg1;
+            higherPrecedence = arg2;
+            lowerPrecedence = arg1;
         }
 
 
-        final DataType sourceType = source.valueType();
-        final DataType targetType = target.valueType();
-        // We might be able to convert one of the two losslessly
-        if (source instanceof Literal && ((Literal) source).isLosslesslyConvertableTo(targetType)) {
-            return target;
-        } else if (target instanceof Literal && ((Literal) target).isLosslesslyConvertableTo(sourceType)) {
-            return source;
+        final DataType lowerPrecedenceType = lowerPrecedence.valueType();
+        final DataType higherPrecedenceType = higherPrecedence.valueType();
+//        // We might be able to convert one of the two losslessly
+//        if (source instanceof Literal && ((Literal) source).isLosslesslyConvertableTo(targetType)) {
+//            return target;
+//        } else if (target instanceof Literal && ((Literal) target).isLosslesslyConvertableTo(sourceType)) {
+//            return source;
+//        }
+
+        // TODO rename these
+        FuncArg possibleTargetType1 = null;
+        FuncArg possibleTargetType2 = null;
+        if (lowerPrecedence.canBeCastTo(higherPrecedenceType) && isTypeValid(higherPrecedenceType)) {
+            possibleTargetType1 = higherPrecedence;
+        }
+        if (higherPrecedence.canBeCastTo(lowerPrecedenceType) && isTypeValid(lowerPrecedenceType)) {
+            possibleTargetType2 = lowerPrecedence;
         }
 
-        if (source.canBeCasted() && isTypeValid(targetType)) {
-            return target;
-        } else if (target.canBeCasted() && isTypeValid(sourceType)) {
-            return source;
+        if (possibleTargetType1 != null && lowerPrecedence.isLiteralSymbol()) {
+            return possibleTargetType1;
+        } else if (possibleTargetType2 != null && higherPrecedence.isLiteralSymbol()) {
+            return possibleTargetType2;
         }
 
-        // if neither the source, nor the target can be casted, yet either one *IS* convertible to the other, we will
-        // try to do the conversion (comparing two columns will never utilize the index anyway)
-        if (source.canBeCasted() == false && target.canBeCasted() == false) {
-            if (sourceType.isConvertableTo(targetType) && isTypeValid(targetType)) {
-                return target;
-            } else if (targetType.isConvertableTo(sourceType) && isTypeValid(targetType)) {
-                return source;
-            }
-        }
-
-        return null;
+        return possibleTargetType1 != null ? possibleTargetType1 : possibleTargetType2;
     }
 
     private boolean isTypeValid(DataType dataType) {

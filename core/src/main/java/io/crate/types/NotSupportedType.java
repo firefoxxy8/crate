@@ -62,7 +62,7 @@ public class NotSupportedType extends DataType<Void> {
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         return false;
     }
 

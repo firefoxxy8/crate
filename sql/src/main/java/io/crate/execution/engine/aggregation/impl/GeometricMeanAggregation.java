@@ -149,7 +149,7 @@ public class GeometricMeanAggregation extends AggregationFunction<GeometricMeanA
         }
 
         @Override
-        public boolean isConvertibleWithoutLoss(Object value) {
+        public boolean checkLosslessConversion(Object value) {
             return false;
         }
 

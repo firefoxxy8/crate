@@ -64,9 +64,9 @@ public class SelectSymbol extends Symbol {
     }
 
     @Override
-    public boolean canBeCasted() {
+    public boolean canBeCastTo(DataType targetType) {
         for (Symbol symbol : relation.outputs()) {
-            if (!symbol.canBeCasted()) {
+            if (!symbol.canBeCastTo(targetType)) {
                 return false;
             }
         }

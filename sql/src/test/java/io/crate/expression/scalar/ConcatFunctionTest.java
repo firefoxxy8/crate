@@ -42,7 +42,7 @@ public class ConcatFunctionTest extends AbstractScalarFunctionsTest {
     @Test
     public void testArgumentThatHasNoStringRepr() throws Exception {
         expectedException.expect(ConversionException.class);
-        expectedException.expectMessage("Cannot cast 'foo' to type long_array");
+        expectedException.expectMessage("Cannot cast [1] to type string");
         assertNormalize("concat('foo', [1])", null);
     }
 

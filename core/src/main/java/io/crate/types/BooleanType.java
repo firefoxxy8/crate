@@ -85,7 +85,7 @@ public class BooleanType extends DataType<Boolean> implements Streamer<Boolean>,
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         return value instanceof Number;
     }
 

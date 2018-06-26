@@ -127,9 +127,10 @@ public final class DataTypes {
         .add(BOOLEAN)
         .add(STRING, TIMESTAMP, IP)
         .build();
+
     // allowed conversion from key to one of the value types
     // the key type itself does not need to be in the value set
-    static final ImmutableMap<Integer, Set<DataType>> ALLOWED_CONVERSIONS = ImmutableMap.<Integer, Set<DataType>>builder()
+    public static final ImmutableMap<Integer, Set<DataType>> ALLOWED_CONVERSIONS = ImmutableMap.<Integer, Set<DataType>>builder()
         .put(BYTE.id(), NUMBER_CONVERSIONS)
         .put(SHORT.id(), NUMBER_CONVERSIONS)
         .put(INTEGER.id(), NUMBER_CONVERSIONS)
@@ -153,20 +154,56 @@ public final class DataTypes {
         .put(SetType.ID, ImmutableSet.of()) // convertability handled in SetType
         .build();
 
-    /**
-     * Contains number conversions which are "safe" (= a conversion would not reduce the number of bytes
-     * used to store the value)
-     */
-    private static final ImmutableMap<Integer, Set<DataType>> SAFE_CONVERSIONS = ImmutableMap.<Integer, Set<DataType>>builder()
-        .put(BYTE.id(), ImmutableSet.of(SHORT, INTEGER, LONG, TIMESTAMP, FLOAT, DOUBLE))
-        .put(SHORT.id(), ImmutableSet.of(INTEGER, LONG, TIMESTAMP, FLOAT, DOUBLE))
-        .put(INTEGER.id(), ImmutableSet.of(LONG, TIMESTAMP, FLOAT, DOUBLE))
-        .put(LONG.id(), ImmutableSet.of(TIMESTAMP, DOUBLE))
-        .put(FLOAT.id(), ImmutableSet.of(DOUBLE))
+    // conversions which can be performed for any values without losing precision
+    static final ImmutableMap<Integer, Set<DataType>> SAFE_CONVERSIONS = ImmutableMap.<Integer, Set<DataType>>builder()
+        .put(BOOLEAN.id(),
+            ImmutableSet.of(TIMESTAMP, IP, DOUBLE, FLOAT, BYTE, SHORT, INTEGER, LONG))
+        .put(BYTE.id(),
+            ImmutableSet.of(BOOLEAN, TIMESTAMP, IP, DOUBLE, FLOAT, SHORT, INTEGER, LONG))
+        .put(SHORT.id(),
+            ImmutableSet.of(BOOLEAN, TIMESTAMP, IP, DOUBLE, FLOAT, INTEGER, LONG))
+        .put(INTEGER.id(),
+            ImmutableSet.of(BOOLEAN, TIMESTAMP, IP, DOUBLE, FLOAT, LONG))
+        .put(LONG.id(),
+            ImmutableSet.of(BOOLEAN, TIMESTAMP, IP, DOUBLE))
+        .put(FLOAT.id(),
+            ImmutableSet.of(BOOLEAN, TIMESTAMP, IP, DOUBLE, INTEGER))
+        .put(DOUBLE.id(),
+            ImmutableSet.of( BOOLEAN, TIMESTAMP, IP))
+        .put(STRING.id(), ImmutableSet.<DataType>builder()
+            .addAll(NUMBER_CONVERSIONS)
+            .add(GEO_SHAPE)
+            .add(GEO_POINT)
+            .add(BOOLEAN)
+            .add(OBJECT)
+            .build())
+        .put(IP.id(), ImmutableSet.of(STRING))
+        .put(TIMESTAMP.id(), ImmutableSet.of(DOUBLE, LONG, STRING))
+        .put(UNDEFINED.id(), ImmutableSet.of()) // actually convertible to every type, see NullType
+        .put(GEO_POINT.id(), ImmutableSet.of(new ArrayType(DOUBLE)))
+        .put(OBJECT.id(), ImmutableSet.of(GEO_SHAPE))
+        .put(ArrayType.ID, ImmutableSet.of()) // convertability handled in ArrayType
+        .put(SetType.ID, ImmutableSet.of()) // convertability handled in SetType
         .build();
 
     public static boolean isCollectionType(DataType type) {
         return type.id() == ArrayType.ID || type.id() == SetType.ID;
+    }
+
+    /**
+     * Checks if a conversion from one to another type is possible.
+     * Does _not_ check for loss of precision.
+     */
+    public static boolean conversionAllowed(DataType fromType, DataType toType) {
+        if (isCollectionType(fromType) && isCollectionType(toType)) {
+            fromType = ((CollectionType) fromType).innerType();
+            toType = ((CollectionType) toType).innerType();
+        }
+        if (fromType.id() == UndefinedType.ID) {
+            return true;
+        }
+        Set<DataType> dataTypes = ALLOWED_CONVERSIONS.get(fromType.id());
+        return dataTypes != null && dataTypes.contains(toType);
     }
 
     public static List<DataType> listFromStream(StreamInput in) throws IOException {

@@ -101,8 +101,8 @@ public class GeoPointType extends DataType<Double[]> implements Streamer<Double[
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
-        return false;
+    public boolean checkLosslessConversion(Object value) {
+        return value instanceof BytesRef;
     }
 
     private void validate(Double[] doubles) {

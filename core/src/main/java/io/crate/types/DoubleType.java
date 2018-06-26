@@ -74,7 +74,7 @@ public class DoubleType extends DataType<Double> implements FixedWidthType, Stre
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof BytesRef) {
             try {
                 Double.parseDouble(((BytesRef) value).utf8ToString());

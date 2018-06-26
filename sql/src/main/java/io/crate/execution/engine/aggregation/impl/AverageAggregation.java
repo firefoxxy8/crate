@@ -129,7 +129,7 @@ public class AverageAggregation extends AggregationFunction<AverageAggregation.A
         }
 
         @Override
-        public boolean isConvertibleWithoutLoss(Object value) {
+        public boolean checkLosslessConversion(Object value) {
             return false;
         }
 

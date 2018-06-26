@@ -78,7 +78,7 @@ public class IntegerType extends DataType<Integer> implements Streamer<Integer>,
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         if (value instanceof Number) {
             long longVal = ((Number) value).longValue();
             if (longVal < Integer.MIN_VALUE || Integer.MAX_VALUE < longVal) {

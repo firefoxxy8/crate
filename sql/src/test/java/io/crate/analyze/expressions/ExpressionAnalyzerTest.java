@@ -32,7 +32,6 @@ import io.crate.analyze.relations.FullQualifiedNameFieldProvider;
 import io.crate.analyze.relations.ParentRelations;
 import io.crate.analyze.relations.TableRelation;
 import io.crate.auth.user.User;
-import io.crate.expression.operator.EqOperator;
 import io.crate.expression.operator.GtOperator;
 import io.crate.expression.operator.LtOperator;
 import io.crate.expression.operator.any.AnyLikeOperator;
@@ -293,7 +292,7 @@ public class ExpressionAnalyzerTest extends CrateDummyClusterServiceUnitTest {
 
     @Test
     public void testEarlyConstantFolding() {
-        assertThat(expressions.asSymbol("1 = (1 = (1 = 1))"), isLiteral(true));
+        assertThat(expressions.asSymbol("true != (false = (1 = 1))"), isLiteral(true));
     }
 
     @Test
@@ -316,16 +315,6 @@ public class ExpressionAnalyzerTest extends CrateDummyClusterServiceUnitTest {
         Function symbol = (Function) expressions.asSymbol("doc.t2.i = 1.0");
         assertThat(symbol.arguments().get(0), isField("i"));
         assertThat(symbol.arguments().get(0).valueType(), is(DataTypes.INTEGER));
-    }
-
-    @Test
-    public void testFunctionsCanBeCasted() {
-        SqlExpressions expressions = new SqlExpressions(T3.SOURCES);
-        Function symbol2 = (Function) expressions.asSymbol("doc.t2.i + 1 = 1.4");
-        assertThat(symbol2, isFunction(EqOperator.NAME));
-        assertThat(symbol2.arguments().get(0), isFunction("to_double"));
-        assertThat(symbol2.arguments().get(0).valueType(), is(DataTypes.DOUBLE));
-        assertThat(symbol2.arguments().get(1), isLiteral(1.4));
     }
 
     @Test
@@ -375,7 +364,7 @@ public class ExpressionAnalyzerTest extends CrateDummyClusterServiceUnitTest {
 
     @Test
     public void testAnyWithArrayOnBothSidesResultsInNiceErrorMessage() {
-        expectedException.expectMessage("Cannot cast [10, 20] to type integer_array_array");
+        expectedException.expectMessage("Cannot cast long to type integer_array");
         executor.analyze("select * from tarr where xs = ANY([10, 20])");
     }
 }

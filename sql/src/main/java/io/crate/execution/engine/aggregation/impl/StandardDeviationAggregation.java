@@ -115,7 +115,7 @@ public class StandardDeviationAggregation extends AggregationFunction<StandardDe
         }
 
         @Override
-        public boolean isConvertibleWithoutLoss(Object value) {
+        public boolean checkLosslessConversion(Object value) {
             return false;
         }
 

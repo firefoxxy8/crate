@@ -150,25 +150,14 @@ public class Literal<ReturnType> extends Symbol implements Input<ReturnType>, Co
         return Literal.convert(this, newDataType);
     }
 
-    /**
-     * Literals always may be casted if required.
-     */
     @Override
-    public boolean canBeCasted() {
-        return true;
+    public boolean canBeCastTo(DataType targetType) {
+        return type.isLosslesslyConvertableTo(targetType, value);
     }
 
-    /**
-     * Checks whether this Literal can be converted to the given
-     * DataType without loss of information.
-     * @param dataType The type to check for lossless conversion.
-     * @return True if lossless conversion is possible, false otherwise.
-     */
-    public boolean isLosslesslyConvertableTo(DataType dataType) {
-        if (!type.isConvertableTo(dataType)) {
-            return false;
-        }
-        return dataType.isConvertibleWithoutLoss(this.value);
+    @Override
+    public boolean isLiteralSymbol() {
+        return true;
     }
 
     @Override

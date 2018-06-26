@@ -83,8 +83,8 @@ public class TimestampType extends DataType<Long> implements FixedWidthType, Str
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
-        return value instanceof Number;
+    public boolean checkLosslessConversion(Object value) {
+        return value instanceof Number || value instanceof BytesRef;
     }
 
     @Override

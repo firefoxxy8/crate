@@ -116,7 +116,7 @@ public class VarianceAggregation extends AggregationFunction<VarianceAggregation
         }
 
         @Override
-        public boolean isConvertibleWithoutLoss(Object value) {
+        public boolean checkLosslessConversion(Object value) {
             return false;
         }
 

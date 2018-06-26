@@ -249,7 +249,7 @@ public class HyperLogLogDistinctAggregation extends AggregationFunction<HyperLog
         }
 
         @Override
-        public boolean isConvertibleWithoutLoss(Object value) {
+        public boolean checkLosslessConversion(Object value) {
             return false;
         }
 

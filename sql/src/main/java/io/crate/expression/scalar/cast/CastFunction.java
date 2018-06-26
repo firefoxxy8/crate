@@ -139,7 +139,7 @@ public class CastFunction extends Scalar<Object, Object> implements FunctionForm
 
         void checkPreconditions(List<DataType> dataTypes) {
             DataType convertFrom = dataTypes.get(0);
-            if (!convertFrom.isConvertableTo(targetType)) {
+            if (!DataTypes.conversionAllowed(convertFrom, targetType)) {
                 throw new ConversionException(convertFrom, targetType);
             }
         }

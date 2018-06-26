@@ -96,7 +96,7 @@ public class StringType extends DataType<BytesRef> implements Streamer<BytesRef>
     }
 
     @Override
-    public boolean isConvertibleWithoutLoss(Object value) {
+    public boolean checkLosslessConversion(Object value) {
         // Everything is convertible to String
         return true;
     }

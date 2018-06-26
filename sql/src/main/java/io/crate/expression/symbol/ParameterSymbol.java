@@ -70,7 +70,12 @@ public class ParameterSymbol extends Symbol {
     }
 
     @Override
-    public boolean canBeCasted() {
+    public boolean canBeCastTo(DataType targetType) {
+        return boundType.isLosslesslyConvertableTo(targetType);
+    }
+
+    @Override
+    public boolean isLiteralSymbol() {
         return true;
     }
 
